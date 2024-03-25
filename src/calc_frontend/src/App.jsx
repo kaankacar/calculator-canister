@@ -2,28 +2,55 @@ import { useState } from 'react';
 import { calc_backend } from 'declarations/calc_backend';
 
 function App() {
-  const [greeting, setGreeting] = useState('');
+  const [result, setResult] = useState('');
+  const [inputValue, setInputValue] = useState('');
 
-  function handleSubmit(event) {
-    event.preventDefault();
-    const name = event.target.elements.name.value;
-    calc_backend.greet(name).then((greeting) => {
-      setGreeting(greeting);
-    });
-    return false;
-  }
+  const handleInputChange = (event) => {
+    setInputValue(event.target.value);
+  };
+
+  const performOperation = async (operation) => {
+    const value = parseInt(inputValue, 10);
+    if (isNaN(value)) {
+      alert('Please enter a valid number');
+      return;
+    }
+
+    try {
+      const newResult = await calc_backend[operation](value);
+      setResult(newResult.toString());
+    } catch (error) {
+      alert('An error occurred: ' + error.message);
+    }
+  };
+
+  const handleAdd = () => performOperation('add');
+  const handleSubtract = () => performOperation('sub');
+  const handleMultiply = () => performOperation('mul');
+  const handleDivide = () => performOperation('div');
+  const handleClear = async () => {
+    await calc_backend.clearall();
+    setResult('');
+    setInputValue('');
+  };
 
   return (
     <main>
-      <img src="/logo2.svg" alt="DFINITY logo" />
-      <br />
-      <br />
-      <form action="#" onSubmit={handleSubmit}>
-        <label htmlFor="name">Enter your name: &nbsp;</label>
-        <input id="name" alt="Name" type="text" />
-        <button type="submit">Click Me!</button>
-      </form>
-      <section id="greeting">{greeting}</section>
+      <h1>Calculator</h1>
+      <input 
+        type="number" 
+        value={inputValue} 
+        onChange={handleInputChange} 
+        placeholder="Enter a number" 
+      />
+      <div>
+        <button onClick={handleAdd}>Add</button>
+        <button onClick={handleSubtract}>Subtract</button>
+        <button onClick={handleMultiply}>Multiply</button>
+        <button onClick={handleDivide}>Divide</button>
+        <button onClick={handleClear}>Clear</button>
+      </div>
+      <section id="result">Result: {result}</section>
     </main>
   );
 }
